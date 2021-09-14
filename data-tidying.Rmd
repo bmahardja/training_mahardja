@@ -21,14 +21,9 @@ Read in the data from the [KNB](https://knb.ecoinformatics.org/view/df35b.304.2)
 These data are digitized from the Alaska Department of Fish and Game report: ALASKA COMMERCIAL SALMON CATCHES, 1878-1997. Salmon catch statistics are generated from a system of landing records called the Fish Ticket System. All salmon that are sold must be reported on a fish ticket, which will eventually end up in a large computer database going back to 1969. Data in this report from 1969 to the 1997 carne from this system. Statistics from years prior to 1969 came from previous versions of this report.
 
 
-```{r read raw data, echo=FALSE}
+```{r read raw data}
 catch_original <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
 
-catch_test <- catch_original
-
-catch_test[which(is.na(as.integer(catch_test$Chinook))),]<-1
-catch_test$Chinook<-as.numeric(catch_test$Chinook)
-glimpse(catch_test)
 ```
 
 ## Clean and Reshape Data
@@ -39,6 +34,12 @@ glimpse(catch_test)
 catch_data <- catch_original %>%
   #select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
   select(-All, -notesRegCode)
+
+catch_test <- catch_original
+
+catch_test[which(is.na(as.integer(catch_test$Chinook))),]<-1
+catch_test$Chinook<-as.numeric(catch_test$Chinook)
+glimpse(catch_test)
 ```
 
 * check column types (replace typo of Chinook from I to 1)
@@ -52,15 +53,52 @@ glimpse(catch_clean)
 
 ```
 
-
-
-```{r, echo=FALSE}
-i <- which(is.na(catch_clean$Chinook))
-i
-
-catch_original[i,]
-```
-
 * reshape data
 
+```{r reshape data}
+catch_long <- catch_clean %>%
+  pivot_longer(cols= -c(Region, Year), names_to = "species", values_to = "catch") %>%
+  rename(catch_thousands = catch) %>%
+  mutate(catch = catch_thousands*1000)
+```
+
+
+```{r example of back conversion to wide}
+catch_wide <- catch_long %>%
+  pivot_wider(names_from=Region, values_from = catch)
+
+head(catch_wide)
+```
+
+* group and summarize data
+
+```{r mean region}
+mean_region <- catch_long %>%
+  group_by(Region) %>%
+  summarise(catch_mean = mean(catch))
+
+head(mean_region)
+```
+
+```{r exercise summary}
+mean_year <- catch_long %>% 
+  group_by(Year) %>%
+  summarise(catch_mean = mean(catch), num_obs=n(), .groups= "drop")
+
+head(mean_year)
+```
+
 ## Join to Regions Definitions
+
+
+```{r}
+region_defs <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1") %>% 
+    select(code, mgmtArea)
+
+head(region_defs)
+```
+```{r}
+catch_joined <- left_join(catch_long, region_defs, by=c("Region" = "code"))
+
+```
+
