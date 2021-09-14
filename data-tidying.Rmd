@@ -1,0 +1,66 @@
+---
+title: "Data Cleaning"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+cmd/cntrl+ option/alt + i for quick R chunk insert
+
+```{r library call, message=FALSE}
+library(dplyr)
+library(tidyr)
+```
+
+## Data Sources
+
+Read in the data from the [KNB](https://knb.ecoinformatics.org/view/df35b.304.2).
+
+These data are digitized from the Alaska Department of Fish and Game report: ALASKA COMMERCIAL SALMON CATCHES, 1878-1997. Salmon catch statistics are generated from a system of landing records called the Fish Ticket System. All salmon that are sold must be reported on a fish ticket, which will eventually end up in a large computer database going back to 1969. Data in this report from 1969 to the 1997 carne from this system. Statistics from years prior to 1969 came from previous versions of this report.
+
+
+```{r read raw data, echo=FALSE}
+catch_original <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
+
+catch_test <- catch_original
+
+catch_test[which(is.na(as.integer(catch_test$Chinook))),]<-1
+catch_test$Chinook<-as.numeric(catch_test$Chinook)
+glimpse(catch_test)
+```
+
+## Clean and Reshape Data
+
+* remove unnecessary columns
+
+```{r column removal}
+catch_data <- catch_original %>%
+  #select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+  select(-All, -notesRegCode)
+```
+
+* check column types (replace typo of Chinook from I to 1)
+
+```{r column type}
+catch_clean <- catch_data %>%
+  mutate(Chinook = if_else(Chinook == "I","1",Chinook)) %>%
+  mutate(Chinook = as.integer(Chinook))
+
+glimpse(catch_clean)
+
+```
+
+
+
+```{r, echo=FALSE}
+i <- which(is.na(catch_clean$Chinook))
+i
+
+catch_original[i,]
+```
+
+* reshape data
+
+## Join to Regions Definitions
