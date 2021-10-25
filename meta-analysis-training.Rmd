@@ -1,0 +1,37 @@
+---
+title: "meta-analysis_training"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load metafor library
+
+```{r library}
+library(metafor)
+```
+Grab the data
+
+```{r data grab}
+knb_data<-read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3A168b5aeb-b110-4eb3-93d0-dea71ab34ddb")
+
+bronch_data<-read.csv("https://figshare.com/ndownloader/files/14460386")
+head(bronch_data)
+```
+
+```{r effect size}
+
+effect_size_data <- escalc(measure = "MD", m1i= Mc, sd1i= Sc, n1i=Nc, m2i= Me, sd2i= Se, n2i= Ne, data = bronch_data,  append = TRUE)
+
+effect_size_data
+```
+
+
+```{r metamodel}
+re_model <- rma(yi = yi, sei = vi, method = "ML", test = "knha", control=list(stepadj=0.5), data = effect_size_data)
+summary(re_model)
+
+```
+
