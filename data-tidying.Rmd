@@ -24,6 +24,7 @@ These data are digitized from the Alaska Department of Fish and Game report: ALA
 ```{r read raw data}
 catch_original <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
 
+
 ```
 
 ## Clean and Reshape Data
