@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eml:eml xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.2" packageId="NCEAS-dataset-1" system="local" xsi:schemaLocation="https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd">
+  <dataset>
+    <shortName>NCEAS-1</shortName>
+    <title>A minimal valid EML example at NCEAS</title>
+    <creator>
+      <individualName>
+        <givenName>Brian</givenName>
+        <surName>Mahardja</surName>
+      </individualName>
+    </creator>
+    <abstract>This is a bunch of text that describes the dataset. That is
+                        absolutely what an abstract is.</abstract>
+    <contact>
+      <individualName>
+        <givenName>Brian</givenName>
+        <surName>Mahardja</surName>
+      </individualName>
+    </contact>
+  </dataset>
+</eml:eml>

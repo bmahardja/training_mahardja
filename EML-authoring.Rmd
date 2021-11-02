@@ -1,0 +1,42 @@
+---
+title: "EML authoring"
+author: "Brian Mahardja"
+date: "11/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Compose a single document
+
+```{r}
+library(EML)
+me <- list(givenName = "Brian", surName = "Mahardja")
+me
+
+me2 <- eml$individualName(givenName = "Brian", surName = "Mahardja")
+me2
+
+```
+```{r}
+doc <- list(
+  packageId = "NCEAS-dataset-1",
+  system = "local",
+  dataset = eml$dataset(shortName = "NCEAS-1", title = "A minimal valid EML example at NCEAS",
+                        creator = eml$creator(individualName = me2), 
+                        contact = eml$contact(individualName = me2),
+                        abstract = "This is a bunch of text that describes the dataset. That is
+                        absolutely what an abstract is.")
+)
+
+doc
+
+eml_validate(doc)
+
+write_eml(doc, "./simple_example.xml")
+
+
+```
+
