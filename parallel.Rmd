@@ -1,0 +1,120 @@
+---
+title: "parallel"
+author: "Brian Mahardja"
+date: "11/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Parallelizing training
+
+Running bootstrapping and logistic regression in a serialized manner
+
+```{r}
+x <- iris[which(iris[,5] != "setosa"), c(1,5)]
+trials <- 10000
+res <- data.frame()
+system.time({
+  trial <- 1
+  while(trial <= trials) {
+    ind <- sample(100, 100, replace=TRUE)
+    result1 <- glm(x[ind,2]~x[ind,1], family=binomial(logit))
+    r <- coefficients(result1)
+    res <- rbind(res, r)
+    trial <- trial + 1
+  }
+})
+```
+Using lapply function
+```{r}
+x <- iris[which(iris[,5] != "setosa"), c(1,5)]
+trials <- seq(1, 10000)
+boot_fx <- function(trial) {
+  ind <- sample(100, 100, replace=TRUE)
+  result1 <- glm(x[ind,2]~x[ind,1], family=binomial(logit))
+  r <- coefficients(result1)
+  res <- rbind(data.frame(), r)
+}
+system.time({
+  results <- lapply(trials, boot_fx)
+})
+```
+
+Using lapply and parallelizing the function (running things in parallel)
+
+```{r}
+library(parallel)
+library(MASS)
+```
+
+Figure out number of cores on our machine
+```{r}
+starts <- rep(100, 40)
+fx <- function(nstart) kmeans(Boston, 4, nstart=nstart)
+numCores <- detectCores()
+numCores
+```
+Using regular lapply
+
+User: how much the CPU takes to process 
+System: how much time it takes for the background process
+Elapsed: How long it takes to run the full function
+```{r}
+system.time(
+  results <- lapply(starts, fx)
+)
+```
+
+
+Use 'mclapply' to run on multiple cores
+```{r}
+system.time(
+  results <- mclapply(starts, boot_fx, mc.cores=numCores)
+)
+```
+Now let’s demonstrate with our bootstrap example:
+
+
+```{r}
+x <- iris[which(iris[,5] != "setosa"), c(1,5)]
+trials <- seq(1, 10000)
+boot_fx <- function(trial) {
+  ind <- sample(100, 100, replace=TRUE)
+  result1 <- glm(x[ind,2]~x[ind,1], family=binomial(logit))
+  r <- coefficients(result1)
+  res <- rbind(data.frame(), r)
+}
+system.time({
+  results <- mclapply(trials, boot_fx, mc.cores = numCores)
+})
+```
+
+
+```{r}
+library(foreach)
+
+for (i in 1:3){print(sqrt(i))
+}
+
+foreach (i=1:3) %do% {
+  sqrt(i)
+}
+```
+For parallel doeach
+
+```{r}
+library(foreach)
+library(doParallel)
+
+foreach (i=1:3) %dopar% {
+  sqrt(i)
+}
+
+foreach (i=1:3, .combine=rbind) %dopar% {
+  sqrt(i)
+}
+```
+
